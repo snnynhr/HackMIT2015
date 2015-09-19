@@ -1,4 +1,4 @@
-# Lidar Analytics
+# LiSense
 
 HackMIT 2015 Project
 
