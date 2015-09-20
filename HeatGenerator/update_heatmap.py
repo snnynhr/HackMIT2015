@@ -10,8 +10,8 @@ db = con.meteor
 # columns. The origin cell will be the center cell (num_rows, num_columns).
 num_rows = 20
 num_columns = 20
-cell_width = 200.0
-cell_height = 200.0
+cell_width = 150.0
+cell_height = 150.0
 
 heatmap = []
 cell_radius = (math.sqrt(cell_width ** 2 + cell_height ** 2) + 
@@ -94,7 +94,7 @@ def process_people(people):
   for row in range(2*num_rows+1):
     for col in range(2*num_columns+1):
       if heatmap[row][col] >= -0.2:
-        heatmap[row][col] / 2
+        heatmap[row][col] /= 2.0
   for (angle, distance) in people:
     add_person_heatmap(get_x(angle, distance), get_y(angle, distance))
   update_frontend_heatmap(heatmap)
