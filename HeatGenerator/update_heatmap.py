@@ -1,6 +1,7 @@
 import pymongo
 import math
 import sympy
+import sys
 
 con = pymongo.MongoClient(host='127.0.0.1', port=3001)
 db = con.meteor
@@ -17,6 +18,7 @@ cell_radius = (math.sqrt(cell_width ** 2 + cell_height ** 2) +
   (cell_width + cell_height) / 2) / 4
 person_radius = 0.5
 objects = []
+people = []
 
 ###########################
 # Heatmap Init and I/O
@@ -132,11 +134,42 @@ def process_objects(objects):
 # Parsing Code
 ###########################
 
-# TODO (xzhangpeijin).
+def parse_background(word_array):
+  global objects
+  if word_array[1] == 'BEGIN' or word_array[1] == 'END':
+    return
+  if word_array[1] == 'POLY1':
+    objects.append([])
+  objects[len(objects) - 1].append((float(word_array[2]), float(word_array[3])))
+
+def parse_person(word_array):
+  global people
+  people.append((float(word_array[1]), float(word_array[2])))
+
+def keep_parsing():
+  global people
+  processingBackground = True
+  reset_heatmap()
+  while True:
+    line = raw_input("")
+    word_array = line.split()
+    if word_array[0] == 'BACKGROUND':
+      processingBackground = True
+      parse_background(word_array)
+    elif word_array[0] == 'OBJECT':
+      parse_person(word_array)
+      if processingBackground:
+        # process_objects(objects)
+        print objects
+        processingBackground = False
+    elif word_array[0] == 'TIMESLICE':
+      process_people(people)
+      people = []
 
 if __name__ == "__main__":
+  keep_parsing()
   # TODO insert parsing code, and call process_people
-  reset_heatmap()
-  process_objects([[(180, 1), (0, 1), (30, 1.5)]])
-  process_people([(200, 1), (90, 1)])
-  print_heatmap()
+  # reset_heatmap()
+  # process_objects([[(180, 1), (0, 1), (30, 1.5)]])
+  # process_people([(200, 1), (90, 1)])
+  # print_heatmap()
