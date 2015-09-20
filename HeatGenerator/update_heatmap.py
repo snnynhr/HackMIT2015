@@ -8,10 +8,10 @@ db = con.meteor
 
 # The heatmap will have (2 * num_rows - 1) rows and (2 * num_columns + 1) 
 # columns. The origin cell will be the center cell (num_rows, num_columns).
-num_rows = 5
-num_columns = 5
-cell_width = 0.5
-cell_height = 0.5
+num_rows = 20
+num_columns = 20
+cell_width = 200.0
+cell_height = 200.0
 
 heatmap = []
 cell_radius = (math.sqrt(cell_width ** 2 + cell_height ** 2) + 

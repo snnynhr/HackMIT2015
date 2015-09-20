@@ -1,9 +1,21 @@
+// $.ajax({
+//   url: "http://d3js.org/d3.v3.js",
+//   dataType: "script",
+//   success: undefined
+// });
+
+// $.ajax({
+//   url: "http://d3js.org/d3.hexbin.v0.min.js",
+//   dataType: "script",
+//   success: undefined
+// });
+
 //The next lines should be run, but this seems to go wrong on the first load in bl.ocks.org
 //var width = $(window).width() - margin.left - margin.right - 40;
 //var height = $(window).height() - margin.top - margin.bottom - 80;
 //So I set it fixed to
-var width = 850;
-var height = 350;
+var width = 1200;
+var height = 500;
 
 //The number of columns and rows of the heatmap
 var MapColumns = 20;
@@ -23,7 +35,7 @@ var margin = {
 var svg;
 var points;
 
-initialized = false;
+var initialized = false;
 
 function initialize(rows, columns) {
     MapRows = rows
@@ -34,8 +46,8 @@ function initialize(rows, columns) {
                 height/((MapRows + 1/3) * 1.5)]);
 
     //Set the new height and width of the SVG based on the max possible
-    width = MapColumns*hexRadius*Math.sqrt(3);
-    heigth = MapRows*1.5*hexRadius+0.5*hexRadius;
+    // width = MapColumns*hexRadius*Math.sqrt(3);
+    // heigth = MapRows*1.5*hexRadius+0.5*hexRadius;
     console.log(width, height);
 
     //Set the hexagon radius
@@ -131,7 +143,14 @@ function mout(d) {
 //Start drawing the hexagons
 function draw(color) {
     // console.log(color, points, hexRadius);
-    svg.append("g")
+    // Create SVG element
+    d3.select("#chart").html("");
+    svg = d3.select("#chart").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    svg.html("g")
         .selectAll(".hexagon")
         .data(hexbin(points))
         .enter().append("path")
