@@ -1,9 +1,6 @@
 package org.expee.lidar.parsers;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,9 +27,7 @@ public class NaiveParser extends Parser {
   private static final int MAX_BODY_WIDTH = 5000;
   private static final int MIN_BODY_WIDTH = 0;
   private static final int MAX_GAP = 10;
-  
-  private PrintWriter dout;
- 
+   
   private static class Background {
     private List<Integer> measurements;
     private double mean;
@@ -71,16 +66,6 @@ public class NaiveParser extends Parser {
   
   public NaiveParser() {
     cycles = 0;
-    
-    try {
-      dout = new PrintWriter(new FileWriter(new File("Training.csv")));
-      for (int i = -22; i <= 22; i++) {
-        dout.format("Angle%d,", i);
-      }
-      dout.println("Class");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
   }
 
   public void readData(int angle, int distance, boolean warning) throws IOException {
@@ -127,31 +112,6 @@ public class NaiveParser extends Parser {
       ++start;
     }
     start %= DEGREES;
-    
-    System.err.println("FLUSHING\n");
-    
-    for (int i = 0; i < DEGREES; i += 5) {
-      if (!isData(i)) {
-        continue;
-      }
-      int init = data[i];
-      for (int offset = -22; offset <= 22; offset++) {
-        int pos = (i + DEGREES + offset) % DEGREES;
-        if (isData(pos)) {
-          dout.print(init - data[pos]);
-        } else {
-          dout.print(MAX_DIST);
-        }
-        dout.print(",");
-      }
-      if (i == 270) {
-        dout.println("YES");
-      } else {
-        dout.println("NO");
-      }
-      dout.flush();
-    }
-
 
     int pos = start;
     int begin = -1;
@@ -193,6 +153,7 @@ public class NaiveParser extends Parser {
       // Flush any remaining if we didn't get to it
       out.format("OBJECT %d %f%n", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
     }    
+    out.println("TIMESLICE END");
     out.flush();
   }
   

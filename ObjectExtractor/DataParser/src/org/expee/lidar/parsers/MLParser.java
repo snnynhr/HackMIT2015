@@ -139,6 +139,9 @@ public class MLParser extends Parser {
         out.flush();
       }
     }
+    
+    out.println("TIMESLICE END");
+    out.flush();
   }
   
   private boolean isData(int pos) {

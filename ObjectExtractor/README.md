@@ -32,9 +32,13 @@ After the first background write, identified objects will be written in the foll
 ```
 OBJECT <angle> <distance>
 OBJECT <angle> <distance>
+TIMESLICE END
+OBJECT <angle> <distance>
 ...
 ```
 
 * angle: The angle (in degrees) of the object center between 0-359
 * distance: The distance (in millimeters) of the object center 
+
+The `TIMESLICE END` message denotes the end of a timeslice (each timeslice denotes one revolution of the lidar).
 
