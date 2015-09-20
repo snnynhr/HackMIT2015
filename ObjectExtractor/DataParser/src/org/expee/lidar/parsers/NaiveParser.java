@@ -108,8 +108,6 @@ public class NaiveParser extends Parser {
     
   // Flushes the human info data to the outputstream
   private void flushData() throws IOException {
-    PrintWriter out = new PrintWriter(new OutputStreamWriter(os));
-
     int start = 0;
     while (start < DEGREES && !isData(start)) {
       ++start;
@@ -119,11 +117,13 @@ public class NaiveParser extends Parser {
     int pos = start;
     int begin = -1;
     double avgDist = 0;
-    while (pos != start) {
+    do {
       if (begin != -1 && (!isData(pos) || getWidth(begin, pos, avgDist) > MAX_BODY_WIDTH)) {
         // If we started an object and we reached no data or the body is too wide/thin, finish.
-        if (getWidth(begin, pos, avgDist) < MIN_BODY_WIDTH) {
-          out.format("OBJECT %d %f", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
+        if (getWidth(begin, pos, avgDist) > MIN_BODY_WIDTH) {
+          out.format("OBJECT %d %f%n", getMid(begin, pos), 
+              avgDist / getDiff(begin, pos) - BODY_WIDTH);
+          out.flush();
         }
         begin = -1;
         avgDist = 0;
@@ -134,13 +134,12 @@ public class NaiveParser extends Parser {
         avgDist += data[pos];
       }
       pos = (pos + 1) % DEGREES;
-    }
+    } while (pos != start);
     if (begin != -1 && getWidth(begin, pos, avgDist) >= MIN_BODY_WIDTH) {
       // Flush any remaining if we didn't get to it
-      out.format("OBJECT %d %f", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
-    }
-    
-    out.close();    
+      out.format("OBJECT %d %f%n", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
+    }    
+    out.flush();
   }
   
   // Assume [begin, stop) is a body. Get the midpoint (in degrees) of the body
@@ -159,7 +158,8 @@ public class NaiveParser extends Parser {
   
   private boolean isData(int pos) {
     Background b = background[pos];
-    return b.mean - 2 * b.sd >= data[pos];
+    //System.err.println(b.mean - 2 * b.sd + " " + data[pos]);
+    return b.mean - 2 * b.sd > data[pos];
   }
   
   private double getWidth(int begin, int cur, double avgDist) {
@@ -172,8 +172,6 @@ public class NaiveParser extends Parser {
       b.finish();
     }
     
-    PrintWriter out = new PrintWriter(new OutputStreamWriter(os));
-
     int start = 0;
     while (start < DEGREES && !isBackground(start)) {
       ++start;
@@ -183,17 +181,16 @@ public class NaiveParser extends Parser {
     out.format("BACKGROUND START%n");
     int pos = start;
     int vertex = 0;
-    while (pos != start) {
+    do {
       if (!isBackground(pos)) {
         out.format("BACKGROUND POLY%d %d %f%n", ++vertex, pos, background[pos].mean);
       } else {
         vertex = 0;
       }
       pos = (pos + 1) % DEGREES;
-    }
+    } while (pos != start);
     out.format("BACKGROUND END%n");
-    
-    out.close();
+    out.flush();
   }
   
   private boolean isBackground(int pos) {

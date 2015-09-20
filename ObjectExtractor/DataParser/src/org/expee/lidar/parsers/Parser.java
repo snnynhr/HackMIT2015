@@ -2,6 +2,8 @@ package org.expee.lidar.parsers;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 /**
  * Parses a stream of Lidar Data into human objects. Flushes periodically to
@@ -24,10 +26,10 @@ public abstract class Parser {
   // Number of millimeters we estimate to be half of average body width.
   static final int BODY_WIDTH = 150;
     
-  protected OutputStream os = System.out;
+  protected PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
   
   void setOutput(OutputStream os) {
-    this.os = os;
+    this.out = new PrintWriter(new OutputStreamWriter(os));
   }
   
   public abstract void readData(int angle, int distance, boolean warning) throws IOException;

@@ -1,6 +1,8 @@
 package org.expee.lidar;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +34,6 @@ public class DataReader {
   public static void main(String[] args) throws IOException {
     // Change this to use explicit input/output streams
     // Currently just assumes input in standard in and output in standard out
-    DataReader.readData(new NaiveParser());
+    DataReader.readData(new NaiveParser(), new FileInputStream(new File("data.txt")));
   }
 }
