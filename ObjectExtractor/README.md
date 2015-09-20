@@ -7,7 +7,7 @@ Code for analyzing raw Lidar Data into background and human location data
 It is guaranteed that an identified background will first be written before any object data is printed out. A background flush is as follows:
 
 ```
-BACKGROUND BEGIN
+BACKGROUND START
 BACKGROUND POLY1 <angle> <distance>
 BACKGROUND POLY2 <angle> <distance>
 BACKGROUND POLY3 <angle> <distance>
