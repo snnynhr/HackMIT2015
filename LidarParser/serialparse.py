@@ -26,7 +26,7 @@ def checksum(data):
     checksum = checksum & 0x7FFF # truncate to 15 bits
     return int( checksum )
 
-ser = serial.Serial(2, 115200, timeout=1)
+ser = serial.Serial("/dev/tty.usbmodem1411", 115200, timeout=1)
 
 print(ser.name)
 
