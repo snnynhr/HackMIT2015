@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.expee.lidar.parsers.NaiveParser;
+import org.expee.lidar.parsers.MLParser;
 import org.expee.lidar.parsers.Parser;
 
 public class DataReader {
@@ -29,9 +29,9 @@ public class DataReader {
     readData(p, System.in);
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws Exception {
     // Change this to use explicit input/output streams
     // Currently just assumes input in standard in and output in standard out
-    DataReader.readData(new NaiveParser());
+    DataReader.readData(new MLParser("data/Classifier1.model"));
   }
 }

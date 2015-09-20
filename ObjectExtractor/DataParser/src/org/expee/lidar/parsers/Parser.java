@@ -21,7 +21,7 @@ public abstract class Parser {
   }
   
   static final int DEGREES = 360;
-  static final int MAX_DIST = 9000;
+  static final int MAX_DIST = 5000;
   
   // Number of millimeters we estimate to be half of average body width.
   static final int BODY_WIDTH = 150;

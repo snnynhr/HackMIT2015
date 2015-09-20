@@ -1,6 +1,9 @@
 package org.expee.lidar.parsers;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,9 +27,12 @@ public class NaiveParser extends Parser {
   private int cycles;
   
   // Cutoff for a body (in millimeters) for the width of a body
-  private static final int MAX_BODY_WIDTH = 1000;
-  private static final int MIN_BODY_WIDTH = 15;
+  private static final int MAX_BODY_WIDTH = 5000;
+  private static final int MIN_BODY_WIDTH = 0;
+  private static final int MAX_GAP = 10;
   
+  private PrintWriter dout;
+ 
   private static class Background {
     private List<Integer> measurements;
     private double mean;
@@ -65,6 +71,16 @@ public class NaiveParser extends Parser {
   
   public NaiveParser() {
     cycles = 0;
+    
+    try {
+      dout = new PrintWriter(new FileWriter(new File("Training.csv")));
+      for (int i = -22; i <= 22; i++) {
+        dout.format("Angle%d,", i);
+      }
+      dout.println("Class");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public void readData(int angle, int distance, boolean warning) throws IOException {
@@ -107,29 +123,69 @@ public class NaiveParser extends Parser {
   // Flushes the human info data to the outputstream
   private void flushData() throws IOException {
     int start = 0;
-    while (start < DEGREES && !isData(start)) {
+    while (start < DEGREES && isData(start)) {
       ++start;
     }
     start %= DEGREES;
+    
+    System.err.println("FLUSHING\n");
+    
+    for (int i = 0; i < DEGREES; i += 5) {
+      if (!isData(i)) {
+        continue;
+      }
+      int init = data[i];
+      for (int offset = -22; offset <= 22; offset++) {
+        int pos = (i + DEGREES + offset) % DEGREES;
+        if (isData(pos)) {
+          dout.print(init - data[pos]);
+        } else {
+          dout.print(MAX_DIST);
+        }
+        dout.print(",");
+      }
+      if (i == 270) {
+        dout.println("YES");
+      } else {
+        dout.println("NO");
+      }
+      dout.flush();
+    }
+
 
     int pos = start;
     int begin = -1;
+    int gap = 0;
     double avgDist = 0;
     do {
-      if (begin != -1 && (!isData(pos) || getWidth(begin, pos, avgDist) > MAX_BODY_WIDTH)) {
+      //System.out.println(avgDist + " " + begin);
+      if (begin != -1 && gap > MAX_GAP &&
+          (!isData(pos) || getWidth(begin, pos, avgDist) > MAX_BODY_WIDTH)) {
+        if (isData(pos)) {
+          System.err.println("Body too fat!");
+        } else if (getWidth(begin, pos, avgDist) < MIN_BODY_WIDTH) {
+          System.err.println("Body too thin!");
+        }
         // If we started an object and we reached no data or the body is too wide/thin, finish.
-        if (getWidth(begin, pos, avgDist) > MIN_BODY_WIDTH) {
+        if (getWidth(begin, pos, avgDist) >= MIN_BODY_WIDTH) {
           out.format("OBJECT %d %f%n", getMid(begin, pos), 
-              avgDist / getDiff(begin, pos) - BODY_WIDTH);
+              avgDist - BODY_WIDTH);
           out.flush();
         }
         begin = -1;
         avgDist = 0;
+        gap = 0;
       } else if (isData(pos)) {
+        gap = 0;
         if (begin == -1) {
           begin = pos;
+          avgDist = data[pos];
+        } else {
+          int size = getDiff(begin, pos);
+          avgDist = (avgDist * (size - 1) + data[pos]) / size;
         }
-        avgDist += data[pos];
+      } else if (begin != -1) {
+        ++gap;
       }
       pos = (pos + 1) % DEGREES;
     } while (pos != start);
@@ -157,7 +213,7 @@ public class NaiveParser extends Parser {
   private boolean isData(int pos) {
     Background b = background[pos];
     //System.err.println(b.mean - 2 * b.sd + " " + data[pos]);
-    return b.mean - 2 * b.sd > data[pos];
+    return (b.mean - 2 * b.sd - 500) > data[pos];
   }
   
   private double getWidth(int begin, int cur, double avgDist) {
@@ -171,7 +227,7 @@ public class NaiveParser extends Parser {
     }
     
     int start = 0;
-    while (start < DEGREES && !isBackground(start)) {
+    while (start < DEGREES && isBackground(start)) {
       ++start;
     }
     start %= DEGREES;
