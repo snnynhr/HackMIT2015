@@ -46,7 +46,7 @@ def distance(x1, y1, x2, y2):
   return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 def get_cell_location(row, col):
-  return ((row - num_rows) * cell_width, (col - num_columns) * cell_height)
+  return ((col - num_columns) * cell_width, (row - num_rows) * cell_height)
 
 def person_in_cell(xcoord, ycoord, row, col):
   (cell_x, cell_y) = get_cell_location(row, col)
