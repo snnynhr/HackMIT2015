@@ -8,8 +8,8 @@ Output data format:
 ...
 ```
 
-*angle: An integer between 0-356 inclusive, that gives the angle measurement.
+* angle: An integer between 0-356 inclusive, that gives the angle measurement.
 
-*distance: An integer that details the distance away.
+* distance: An integer that details the distance away.
 
-*warning: "True" or "False", depending on if there is a strength warning (meaning distance measurement may not be accurate).
+* warning: "True" or "False", depending on if there is a strength warning (meaning distance measurement may not be accurate).
