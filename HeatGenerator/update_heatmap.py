@@ -85,6 +85,7 @@ def add_person_heatmap(xcoord, ycoord):
   global heatmap
   for row in range(2*num_rows+1):
     for col in range(2*num_columns+1):
+      heatmap[row][col] / 1.2
       if person_in_cell(xcoord, ycoord, row, col) and heatmap[row][col] != -1.0:
         heatmap[row][col] += 1.0
 
@@ -111,10 +112,22 @@ def cell_intersect_line(row, col, x1, y1, x2, y2):
     segments_intersect(p3x, p3y, p0x, p0y, x1, y1, x2, y2))
 
 def add_line_heatmap(x1, y1, x2, y2):
+  sl = False
+  ssl = False
+  if not (x2 - x1 == 0):
+    slope = (y2-y1)/(x2-x1)
+  else:
+    sl = True
   for row in range(2*num_rows+1):
     for col in range(2*num_columns+1):
-      if cell_intersect_line(row, col, x1, y1, x2, y2):
-        heatmap[row][col] = -1.0
+      (x, y) = get_cell_location(row, col)
+      if not (x - x1 == 0):
+        s = (y - y1) / (x - x1)
+      else:
+        ssl = True
+      if (sl and ssl) or abs(s - slope) < 1:
+        if cell_intersect_line(row, col, x1, y1, x2, y2):
+          heatmap[row][col] = -1.0
 
 def add_object_heatmap(obj):
   object_xy = []
@@ -163,6 +176,7 @@ def keep_parsing():
       if processingBackground:
         # process_objects(objects)
         print objects
+        print "done objects"
         processingBackground = False
     elif word_array[0] == 'TIMESLICE':
       process_people(people)
