@@ -85,13 +85,16 @@ def add_person_heatmap(xcoord, ycoord):
   global heatmap
   for row in range(2*num_rows+1):
     for col in range(2*num_columns+1):
-      heatmap[row][col] / 1.2
-      if person_in_cell(xcoord, ycoord, row, col) and heatmap[row][col] != -1.0:
+      if person_in_cell(xcoord, ycoord, row, col) and heatmap[row][col] >= -0.2:
         heatmap[row][col] += 1.0
 
 # people is of type [(angle1, distance1), (angle2, distance2),...
 # Angles in degrees.
 def process_people(people):
+  for row in range(2*num_rows+1):
+    for col in range(2*num_columns+1):
+      if heatmap[row][col] >= -0.2:
+        heatmap[row][col] / 2
   for (angle, distance) in people:
     add_person_heatmap(get_x(angle, distance), get_y(angle, distance))
   update_frontend_heatmap(heatmap)
@@ -111,23 +114,23 @@ def cell_intersect_line(row, col, x1, y1, x2, y2):
     segments_intersect(p2x, p2y, p3x, p3y, x1, y1, x2, y2) or
     segments_intersect(p3x, p3y, p0x, p0y, x1, y1, x2, y2))
 
+def get_grid_location(x, y):
+  return (x / cell_width + num_columns, num_rows - y / cell_height)
+
 def add_line_heatmap(x1, y1, x2, y2):
-  sl = False
-  ssl = False
   if not (x2 - x1 == 0):
     slope = (y2-y1)/(x2-x1)
   else:
     sl = True
-  for row in range(2*num_rows+1):
-    for col in range(2*num_columns+1):
-      (x, y) = get_cell_location(row, col)
-      if not (x - x1 == 0):
-        s = (y - y1) / (x - x1)
-      else:
-        ssl = True
-      if (sl and ssl) or abs(s - slope) < 1:
-        if cell_intersect_line(row, col, x1, y1, x2, y2):
-          heatmap[row][col] = -1.0
+
+  sunny_magic = 5
+  for i in range(sunny_magic + 1):
+    s = i * (x2 - x1) / sunny_magic + x1;
+    (col, row) = get_grid_location(s, slope * (s - x1) + y1)
+    row_int = int(row)
+    col_int = int(col)
+    if 0 <= row_int and row_int < num_rows*2+1 and 0 <= col_int and col_int < num_columns*2+1:
+      heatmap[int(row)][int(col)] = -1.0
 
 def add_object_heatmap(obj):
   object_xy = []
@@ -174,8 +177,9 @@ def keep_parsing():
     elif word_array[0] == 'OBJECT':
       parse_person(word_array)
       if processingBackground:
-        # process_objects(objects)
+        process_objects(objects)
         print objects
+        print_heatmap()
         print "done objects"
         processingBackground = False
     elif word_array[0] == 'TIMESLICE':
@@ -186,6 +190,6 @@ if __name__ == "__main__":
   keep_parsing()
   # TODO insert parsing code, and call process_people
   # reset_heatmap()
-  # process_objects([[(180, 1), (0, 1), (30, 1.5)]])
+  # process_objects([[(180, 400), (0, 400)]])
   # process_people([(200, 1), (90, 1)])
   # print_heatmap()

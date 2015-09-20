@@ -24,6 +24,8 @@ var MapRows = 20;
 var hexRadius;
 var points;
 
+var attractions = [];
+
 //svg sizes and margins
 var margin = {
     top: 30,
@@ -71,6 +73,9 @@ function initialize(rows, columns) {
 }
 
 function floatToColor(x, max) {
+    if (x < -0.5) {
+        return "#000000";
+    }
     var arr = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
     var g = parseInt(255.0 - (x / max) * 255);
     var a = g % 16;
@@ -89,9 +94,12 @@ function getColumns(array2d) {
 
 function flattenArray(array2d) {
     var flattened = []
+    // attractions = [];
     for (var i = 0; i < MapRows; i++) {
+        // attractions.push([]);
         for (var j = 0; j < MapColumns; j++) {
             flattened[i * MapColumns + j] = array2d[i][j];
+            // attractions[i].push(0);
         }
     }
     return flattened;
@@ -104,6 +112,9 @@ function colorArray(array) {
         if (array[i] >= max) {
             max = array[i];
         }
+    }
+    if (max < 0.001) {
+        max = 1;
     }
     for (i = 0; i < MapColumns * MapRows; i++) {
         color[i] = floatToColor(array[i], max);
@@ -136,6 +147,12 @@ function mout(d) {
        ;
 };
 
+function mclick(d) {
+    console.log(d);
+    attractions[d.i][d.j] = 1;
+    console.log(attractions);
+};
+
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////// Draw hexagons and color them ///////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -166,11 +183,13 @@ function draw(color) {
             return color[i];
         })
         .on("mouseover", mover)
-        .on("mouseout", mout)
+        .on("mouseout", mout).
+        on("click", mclick)
         ;
 }
 
 display_heatmap = function(heatmap) {
+    window.heatmap = heatmap;
     if (!initialized) {
         initialize(getRows(heatmap), getColumns(heatmap));
     }
