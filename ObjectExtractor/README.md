@@ -1,8 +1,8 @@
 Code for analyzing raw Lidar Data into background and human location data
 
-== Object Identifier Output Format
+==Object Identifier Output Format
 
-=== Background Identification
+===Background Identification
 
 It is guaranteed that an identified background will first be written before any object data is printed out. A background flush is as follows:
 
@@ -25,7 +25,7 @@ The drawing process is as follows. Given POLY(N) and POLY(N + 1), always draw a 
 
 Additional background writes may occur throughout the process of operation, but it is not guaranteed.
 
-=== Object Identification
+===Object Identification
 
 After the first background write, identified objects will be written in the following format:
 

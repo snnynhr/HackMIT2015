@@ -181,6 +181,7 @@ public class NaiveParser extends Parser {
     }
     start %= DEGREES;
     
+    out.format("BACKGROUND START%n");
     int pos = start;
     int vertex = 0;
     while (pos != start) {
@@ -191,6 +192,7 @@ public class NaiveParser extends Parser {
       }
       pos = (pos + 1) % DEGREES;
     }
+    out.format("BACKGROUND END%n");
     
     out.close();
   }
