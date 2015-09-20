@@ -1,4 +1,4 @@
-# LiSense
+# Lidarlytics
 
 HackMIT 2015 Project
 
