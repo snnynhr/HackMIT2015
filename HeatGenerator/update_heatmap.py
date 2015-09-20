@@ -36,6 +36,8 @@ def update_frontend_heatmap(array):
 
 def reset_heatmap():
   global heatmap
+  result = db.heatmap.remove({})
+  result = db.heatmap.insert_one({"name": "default", "contents": []})
   for i in range(2*num_rows+1):
     heatmap.append([0.0] * (2*num_columns+1))
 
