@@ -27,6 +27,7 @@ public class NaiveParser extends Parser {
   
   // Cutoff for a body (in millimeters) for the width of a body
   private static final int MAX_BODY_WIDTH = 1000;
+  private static final int MIN_BODY_WIDTH = 15;
   
   private static class Background {
     private List<Integer> measurements;
@@ -119,9 +120,11 @@ public class NaiveParser extends Parser {
     int begin = -1;
     double avgDist = 0;
     while (pos != start) {
-      if (begin != -1 && (!isData(pos) || tooWide(begin, pos, avgDist))) {
-        // If we started an object and we reached no data or the body is too wide, finish object
-        out.format("OBJECT %d %f", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
+      if (begin != -1 && (!isData(pos) || getWidth(begin, pos, avgDist) > MAX_BODY_WIDTH)) {
+        // If we started an object and we reached no data or the body is too wide/thin, finish.
+        if (getWidth(begin, pos, avgDist) < MIN_BODY_WIDTH) {
+          out.format("OBJECT %d %f", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
+        }
         begin = -1;
         avgDist = 0;
       } else if (isData(pos)) {
@@ -132,7 +135,7 @@ public class NaiveParser extends Parser {
       }
       pos = (pos + 1) % DEGREES;
     }
-    if (begin != -1) {
+    if (begin != -1 && getWidth(begin, pos, avgDist) >= MIN_BODY_WIDTH) {
       // Flush any remaining if we didn't get to it
       out.format("OBJECT %d %f", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
     }
@@ -151,7 +154,7 @@ public class NaiveParser extends Parser {
   
   // Assume that [begin, stop) is a body. Get the width (in degrees) of the body
   private int getDiff(int begin, int stop) {
-    return (stop - 1 + DEGREES - begin) % DEGREES;
+    return (stop + DEGREES - begin) % DEGREES;
   }
   
   private boolean isData(int pos) {
@@ -159,12 +162,8 @@ public class NaiveParser extends Parser {
     return b.mean - 2 * b.sd >= data[pos];
   }
   
-  private boolean tooWide(int begin, int cur, double avgDist) {
-    if (begin == -1) {
-      return false;
-    }
-    
-    return true;
+  private double getWidth(int begin, int cur, double avgDist) {
+    return avgDist * 2 * Math.PI * getDiff(begin, cur) / DEGREES;
   }
   
   // Flushes the background data to the outputstream
@@ -181,6 +180,7 @@ public class NaiveParser extends Parser {
     }
     start %= DEGREES;
     
+    out.format("BACKGROUND START%n");
     int pos = start;
     int vertex = 0;
     while (pos != start) {
@@ -191,6 +191,7 @@ public class NaiveParser extends Parser {
       }
       pos = (pos + 1) % DEGREES;
     }
+    out.format("BACKGROUND END%n");
     
     out.close();
   }
