@@ -1,8 +1,6 @@
 package org.expee.lidar.parsers;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +24,10 @@ public class NaiveParser extends Parser {
   private int cycles;
   
   // Cutoff for a body (in millimeters) for the width of a body
-  private static final int MAX_BODY_WIDTH = 1000;
-  private static final int MIN_BODY_WIDTH = 15;
-  
+  private static final int MAX_BODY_WIDTH = 5000;
+  private static final int MIN_BODY_WIDTH = 0;
+  private static final int MAX_GAP = 10;
+   
   private static class Background {
     private List<Integer> measurements;
     private double mean;
@@ -108,39 +107,54 @@ public class NaiveParser extends Parser {
     
   // Flushes the human info data to the outputstream
   private void flushData() throws IOException {
-    PrintWriter out = new PrintWriter(new OutputStreamWriter(os));
-
     int start = 0;
-    while (start < DEGREES && !isData(start)) {
+    while (start < DEGREES && isData(start)) {
       ++start;
     }
     start %= DEGREES;
 
     int pos = start;
     int begin = -1;
+    int gap = 0;
     double avgDist = 0;
-    while (pos != start) {
-      if (begin != -1 && (!isData(pos) || getWidth(begin, pos, avgDist) > MAX_BODY_WIDTH)) {
+    do {
+      //System.out.println(avgDist + " " + begin);
+      if (begin != -1 && gap > MAX_GAP &&
+          (!isData(pos) || getWidth(begin, pos, avgDist) > MAX_BODY_WIDTH)) {
+        if (isData(pos)) {
+          System.err.println("Body too fat!");
+        } else if (getWidth(begin, pos, avgDist) < MIN_BODY_WIDTH) {
+          System.err.println("Body too thin!");
+        }
         // If we started an object and we reached no data or the body is too wide/thin, finish.
-        if (getWidth(begin, pos, avgDist) < MIN_BODY_WIDTH) {
-          out.format("OBJECT %d %f", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
+        if (getWidth(begin, pos, avgDist) >= MIN_BODY_WIDTH) {
+          out.format("OBJECT %d %f%n", getMid(begin, pos), 
+              avgDist - BODY_WIDTH);
+          out.flush();
         }
         begin = -1;
         avgDist = 0;
+        gap = 0;
       } else if (isData(pos)) {
+        gap = 0;
         if (begin == -1) {
           begin = pos;
+          avgDist = data[pos];
+        } else {
+          int size = getDiff(begin, pos);
+          avgDist = (avgDist * (size - 1) + data[pos]) / size;
         }
-        avgDist += data[pos];
+      } else if (begin != -1) {
+        ++gap;
       }
       pos = (pos + 1) % DEGREES;
-    }
+    } while (pos != start);
     if (begin != -1 && getWidth(begin, pos, avgDist) >= MIN_BODY_WIDTH) {
       // Flush any remaining if we didn't get to it
-      out.format("OBJECT %d %f", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
-    }
-    
-    out.close();    
+      out.format("OBJECT %d %f%n", getMid(begin, pos), avgDist / getDiff(begin, pos) - BODY_WIDTH);
+    }    
+    out.println("TIMESLICE END");
+    out.flush();
   }
   
   // Assume [begin, stop) is a body. Get the midpoint (in degrees) of the body
@@ -159,7 +173,8 @@ public class NaiveParser extends Parser {
   
   private boolean isData(int pos) {
     Background b = background[pos];
-    return b.mean - 2 * b.sd >= data[pos];
+    //System.err.println(b.mean - 2 * b.sd + " " + data[pos]);
+    return (b.mean - 2 * b.sd - 500) > data[pos];
   }
   
   private double getWidth(int begin, int cur, double avgDist) {
@@ -172,10 +187,8 @@ public class NaiveParser extends Parser {
       b.finish();
     }
     
-    PrintWriter out = new PrintWriter(new OutputStreamWriter(os));
-
     int start = 0;
-    while (start < DEGREES && !isBackground(start)) {
+    while (start < DEGREES && isBackground(start)) {
       ++start;
     }
     start %= DEGREES;
@@ -183,17 +196,16 @@ public class NaiveParser extends Parser {
     out.format("BACKGROUND START%n");
     int pos = start;
     int vertex = 0;
-    while (pos != start) {
+    do {
       if (!isBackground(pos)) {
         out.format("BACKGROUND POLY%d %d %f%n", ++vertex, pos, background[pos].mean);
       } else {
         vertex = 0;
       }
       pos = (pos + 1) % DEGREES;
-    }
+    } while (pos != start);
     out.format("BACKGROUND END%n");
-    
-    out.close();
+    out.flush();
   }
   
   private boolean isBackground(int pos) {
