@@ -1,4 +1,5 @@
 import serial
+import sys
 
 def align(ser):
 	endpacket = ser.read(1)
@@ -72,6 +73,7 @@ while(1):
 			
 			
 			print(angle, distance, strength_warning)
+			sys.stdout.flush()
 			#if(angle < 2):
 				#print(angle, distance, strength_warning)
 				#print('#'*(distance>>8))
