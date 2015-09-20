@@ -47,6 +47,7 @@ while(1):
 		
 	else:
 		if(checksum(line) != (int(line[20]) + int(line[21]<<8))):
+			continue
 			#print(checksum(line))
 			#print(int(line[20]) + int(line[21]<<8))
 			#print("CHECKSUM ERROR")
