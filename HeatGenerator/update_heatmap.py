@@ -138,7 +138,7 @@ def process_objects(objects):
 
 def parse_background(word_array):
   global objects
-  if word_array[1] == 'BEGIN' or word_array[1] == 'END':
+  if word_array[1] == 'START' or word_array[1] == 'END':
     return
   if word_array[1] == 'POLY1':
     objects.append([])
