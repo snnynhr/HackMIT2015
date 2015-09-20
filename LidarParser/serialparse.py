@@ -4,9 +4,9 @@ import sys
 def align(ser):
 	endpacket = ser.read(1)
 	while(endpacket != b'\xfa'):
-		print("aligning", endpacket)
+		#print("aligning", endpacket)
 		endpacket = ser.read(1)
-	print("aligned")
+	#print("aligned")
 	ser.read(21)
 	return 
 	
@@ -29,7 +29,7 @@ def checksum(data):
 
 ser = serial.Serial(2, 115200, timeout=1)
 
-print(ser.name)
+#print(ser.name)
 
 align(ser)
 
@@ -37,19 +37,19 @@ while(1):
 	line = ser.read(22)
 	
 	if(len(line) != 22):
-		print("length not 22")
+		#print("length not 22")
 		continue
 	
 	if(line[0] != 0xfa):
-		print(line[0])
-		print("ALIGNMENT ERROR")
+		#print(line[0])
+		#print("ALIGNMENT ERROR")
 		align(ser)
 		
 	else:
 		if(checksum(line) != (int(line[20]) + int(line[21]<<8))):
-			print(checksum(line))
-			print(int(line[20]) + int(line[21]<<8))
-			print("CHECKSUM ERROR")
+			#print(checksum(line))
+			#print(int(line[20]) + int(line[21]<<8))
+			#print("CHECKSUM ERROR")
 		
 		#print(line)
 		
