@@ -6,10 +6,10 @@ db = con.meteor
 
 # The heatmap will have (2 * num_rows - 1) rows and (2 * num_columns + 1) 
 # columns. The origin cell will be the center cell (num_rows, num_columns).
-num_rows = 10
-num_columns = 10
-cell_width = 1.0
-cell_height = 1.0
+num_rows = 15
+num_columns = 15
+cell_width = 0.5
+cell_height = 0.5
 
 heatmap = []
 cell_radius = (math.sqrt(cell_width ** 2 + cell_height ** 2) + 
@@ -29,7 +29,12 @@ def update_frontend_heatmap(array):
 
 def reset_heatmap():
   global heatmap
-  heatmap = [[0.0] * num_columns] * num_rows
+  for i in range(2*num_rows+1):
+    heatmap.append([0.0] * (2*num_columns+1))
+
+def print_heatmap():
+  for i in heatmap:
+    print i
 
 # objects is of type [object1, object2, ...].
 # object1 = (name, [(1.2, 2.1), (3.2, 5.6), ...]) where the list contains
@@ -46,8 +51,8 @@ def get_cell_location(row, col):
 def person_in_cell(xcoord, ycoord, row, col):
   (cell_x, cell_y) = get_cell_location(row, col)
   # TODO: possibly replace this with more complex square intersection formula.
-  return distance(xcoord, ycoord, cell_x, cell_y) <=
-    cell_radius + person_radius
+  return (distance(xcoord, ycoord, cell_x, cell_y) <=
+    cell_radius + person_radius)
 
 def add_person_heatmap(xcoord, ycoord):
   global heatmap
@@ -63,5 +68,6 @@ def process_people(people):
   update_frontend_heatmap(heatmap)
 
 # TODO insert parsing code, and call process_people
-
-# update_frontend_heatmap([800,6,89]);
+reset_heatmap()
+process_people([(1, 0, 0)])
+print_heatmap()
